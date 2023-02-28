@@ -49,11 +49,11 @@ namespace PlayeChessEngine {
 
         namespace pieces {
 
-            enum piece_type { p, r, n, b, q, k };
+            export enum piece_type { p, r, n, b, q, k };
 
-            abstract export class Piece {
+            export abstract class Piece {
                 private Type: piece_type;
-                protected get type(): piece_type {
+                public get type(): piece_type {
                     return this.Type;
                 }
                 protected set type(type: piece_type) {
@@ -61,10 +61,10 @@ namespace PlayeChessEngine {
                 }
 
                 private Coords: Array<number>;
-                protected get coords(): Array<number> {
+                public get coords(): Array<number> {
                     return this.Coords;
                 }
-                protected set coords(coords: Array<number>) {
+                public set coords(coords: Array<number>) {
                     this.Coords = coords;
                 }
 
@@ -467,6 +467,77 @@ namespace PlayeChessEngine {
                     }
                 }
                 return moves;
+            }
+
+            public get_all_moves(brd: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]], white:boolean, from_premove:boolean=false): Array<Move> {
+                let moves: Array<Move> = [];
+                for(let i = 0; i < 8; i++) {
+                    for(let j = 0; j < 8; j++) {
+                        if(brd[i][j] == null) continue;
+                        if(brd[i][j].is_white != white) continue;
+                        let tmp_moves: Array<Move> = this.get_moves(i, j, from_premove);
+                        for(let k = 0; k < tmp_moves.length; k++) {
+                            moves.push(tmp_moves[k]);
+                        }
+                    }
+                }
+                return moves;
+            }
+
+            public get_all_landing_moves(brd: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]], white:boolean, from_premove:boolean=false): Array<Array<number>> {
+                let moves: Array<Array<number>> = [];
+                for(let i = 0; i < 8; i++) {
+                    for(let j = 0; j < 8; j++) {
+                        if(brd[i][j] == null) continue;
+                        if(brd[i][j].is_white != white) continue;
+                        let tmp_moves: Array<Move> = this.get_moves(i, j, from_premove);
+                        for(let k = 0; k < tmp_moves.length; k++) {
+                            moves.push([tmp_moves[k].end_coords[0], tmp_moves[k].end_coords[1]]);
+                        }
+                    }
+                }
+                return moves;
+            }
+
+            public is_check(white:boolean): boolean {
+                let moves = this.get_all_landing_moves(this.board, !white, true);
+                for(let i = 0; i < moves.length; i++) {
+                    if(this.board[moves[i][0]][moves[i][1]].type == 5)
+                        return true;
+                }
+                return false;
+            }
+
+            public transfer_piece(start_coords: Array<number>, end_coords: Array<number>): void {
+                let tmp = this.board[start_coords[0]][start_coords[1]];
+                this.board[start_coords[0]][start_coords[1]] = this.board[end_coords[0]][end_coords[1]];
+                this.board[end_coords[0]][end_coords[1]] = tmp;
+                this.board[start_coords[0]][start_coords[1]].coords = start_coords;
+                this.board[end_coords[0]][end_coords[1]].coords = end_coords;
+            }
+
+            // Variant
+            public premove_check(move: Move, white:boolean): boolean {
+                let tmp_board = this.board;
+                this.transfer_piece(move.start_coords, move.end_coords);
+                let is_check = this.is_check(white);
+                this.board = tmp_board;
+                return is_check;
+            }
+
+            public move(move: Move, white: boolean): Move {
+                if(this.board[move.start_coords[0]][move.start_coords[1]] == null) {
+                    move.is_valid = false;
+                    return move;
+                } if(this.board[move.start_coords[0]][move.start_coords[1]].is_white != white) {
+                    move.is_valid = false;
+                    return move;
+                } if(this.get_moves(move.start_coords[0], move.start_coords[1]).includes(move)) {
+                    move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]] != null;
+                    this.transfer_piece(move.start_coords, move.end_coords);
+                    move.is_valid = true;
+                }
+                // HERE
             }
         }
     } // namespace board
