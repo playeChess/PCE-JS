@@ -537,8 +537,30 @@ namespace PlayeChessEngine {
                     this.transfer_piece(move.start_coords, move.end_coords);
                     move.is_valid = true;
                 }
-                // HERE
+                let start_ep_coords = this.get_en_passant(this.moves, white);
+                if(start_ep_coords == [move.start_coords[0], move.start_coords[1]]) {
+                    let side = this.moves[this.moves.length-1].end_coords[0] - start_ep_coords[0];
+                    let offset = white ? 1 : -1;
+                    if(move.end_coords[0] == start_ep_coords[0] + offset && move.end_coords[1] == start_ep_coords[1] + side) {
+                        this.en_passant(start_ep_coords, [start_ep_coords[0] + offset, start_ep_coords[1] + side], white);
+                        move.is_valid = true;
+                        move.is_capture = true;
+                        return move;
+                    }
+                }
+                move.is_valid = false;
+                return move;
             }
+
+            public status(white: boolean): number {
+                if(this.get_all_moves(this.board, white).length == 0) {
+                    if(this.is_check(white)) return 1;
+                    else return 2;
+                }
+                return 0
+            }
+
+            // TODO : Insufficient material
         }
     } // namespace board
 } // namespace PlayeChessEngine
