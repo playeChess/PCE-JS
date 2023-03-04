@@ -484,12 +484,12 @@ namespace PlayeChessEngine {
                 return moves;
             }
 
-            public get_all_landing_moves(brd: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]], white:boolean, from_premove:boolean=false): Array<Array<number>> {
+            public get_all_landing_moves(white:boolean, from_premove:boolean=false): Array<Array<number>> {
                 let moves: Array<Array<number>> = [];
                 for(let i = 0; i < 8; i++) {
                     for(let j = 0; j < 8; j++) {
-                        if(brd[i][j] == null) continue;
-                        if(brd[i][j].is_white != white) continue;
+                        if(this.board[i][j] == null) continue;
+                        if(this.board[i][j].is_white != white) continue;
                         let tmp_moves: Array<Move> = this.get_moves(i, j, from_premove);
                         for(let k = 0; k < tmp_moves.length; k++) {
                             moves.push([tmp_moves[k].end_coords[0], tmp_moves[k].end_coords[1]]);
@@ -500,7 +500,7 @@ namespace PlayeChessEngine {
             }
 
             public is_check(white:boolean): boolean {
-                let moves = this.get_all_landing_moves(this.board, !white, true);
+                let moves = this.get_all_landing_moves(!white, true);
                 for(let i = 0; i < moves.length; i++) {
                     if(this.board[moves[i][0]][moves[i][1]].type == 5)
                         return true;
@@ -560,7 +560,63 @@ namespace PlayeChessEngine {
                 return 0
             }
 
-            // TODO : Insufficient material
+            public insufficient_material(): boolean {
+                let num_knights: number = 0;
+                let num_bishops: number = 0;
+                this.board.forEach(row => {
+                    row.forEach(piece => {
+                        if(piece == null) return;
+                        switch(piece.type) {
+                            case 0:
+                                return false;
+                            case 1:
+                                num_knights++;
+                                break;
+                            case 2:
+                                num_bishops++;
+                                break;
+                            case 3:
+                                return false;
+                            case 4:
+                                return false;
+                            case 5:
+                                return false;
+                            default: break;
+                        }
+                    })
+                });
+                if(num_knights == 0 && num_bishops == 0) 
+                    return true;
+                return false;
+            }
+
+            public can_castle(white: boolean, kingside: boolean): boolean {
+                let row = white ? 7 : 0;
+                let king = this.board[row][4];
+                if(king == null) return false;
+                if(king.has_moved) return false;
+                let rook = this.board[row][kingside ? 7 : 0];
+                if(rook == null) return false;
+                if(rook.has_moved) return false;
+                let start = kingside ? 5 : 1;
+                let end = kingside ? 7 : 3;
+                for(let i = start; i < end; i++) {
+                    if(this.board[row][i] != null || this.get_all_landing_moves(!white).includes([row, i])) return false;
+                }
+                return true;
+            }
+
+            public castle(white: boolean, kingside: boolean): void {
+                let row = white ? 7 : 0;
+                let king = this.board[row][4];
+                let rook = this.board[row][kingside ? 7 : 0];
+                this.transfer_piece([row, 4], [row, kingside ? 6 : 2]);
+                this.transfer_piece([row, kingside ? 7 : 0], [row, kingside ? 5 : 3]);
+            }
+
+            public get_promotion(white: boolean) {
+                // TODO : Implement
+            }
         }
     } // namespace board
 } // namespace PlayeChessEngine
