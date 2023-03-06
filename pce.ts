@@ -52,7 +52,7 @@ namespace PlayeChessEngine {
             export enum piece_type { p, r, n, b, q, k };
 
             export abstract class Piece {
-                private Type: piece_type = piece_type.p;
+                private Type: piece_type;
                 public get type(): piece_type {
                     return this.Type;
                 }
@@ -60,7 +60,7 @@ namespace PlayeChessEngine {
                     this.Type = type;
                 }
 
-                private Coords: Array<number> = [-1, -1];
+                private Coords: Array<number>;
                 public get coords(): Array<number> {
                     return this.Coords;
                 }
