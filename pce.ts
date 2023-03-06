@@ -18,7 +18,7 @@ namespace PlayeChessEngine {
             return this.EndCoords;
         }
 
-        private IsCapture: boolean;
+        private IsCapture: boolean = false;
         public set is_capture(is_capture: boolean) {
             this.IsCapture = is_capture;
         }
@@ -26,7 +26,7 @@ namespace PlayeChessEngine {
             return this.IsCapture;
         }
 
-        private IsValid: boolean;
+        private IsValid: boolean = false;
         public set is_valid(is_valid: boolean) {
             this.IsValid = is_valid;
         }
@@ -52,7 +52,7 @@ namespace PlayeChessEngine {
             export enum piece_type { p, r, n, b, q, k };
 
             export abstract class Piece {
-                private Type: piece_type;
+                private Type: piece_type = piece_type.p;
                 public get type(): piece_type {
                     return this.Type;
                 }
@@ -60,7 +60,7 @@ namespace PlayeChessEngine {
                     this.Type = type;
                 }
 
-                private Coords: Array<number>;
+                private Coords: Array<number> = [-1, -1];
                 public get coords(): Array<number> {
                     return this.Coords;
                 }
@@ -68,7 +68,7 @@ namespace PlayeChessEngine {
                     this.Coords = coords;
                 }
 
-                private IsWhite: boolean;
+                private IsWhite: boolean = true;
                 public set is_white(is_white: boolean) {
                     this.IsWhite = is_white;
                 }
@@ -90,9 +90,11 @@ namespace PlayeChessEngine {
                     this.coords = [x, y];
                 }
 
-                public abstract validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean;
+                ChessBoard = [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]];
 
-                public validate_validation(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public abstract validation_function(board: ChessBoard, x_final: number, y_final: number): boolean;
+
+                public validate_validation(board: ChessBoard, x_final: number, y_final: number): boolean {
                     if(board[x_final][y_final] == null) {
                         return true;
                     }
@@ -102,7 +104,7 @@ namespace PlayeChessEngine {
                     return false;
                 }
 
-                public check_path(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public check_path(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if(x_diff == 0) {
@@ -180,12 +182,14 @@ namespace PlayeChessEngine {
                 }
             }
 
+            type ChessBoard = [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]];
+
             export class Pawn extends Piece {
                 constructor(is_white: boolean, x: number, y: number) {
                     super(piece_type.p, is_white, x, y);
                 }
 
-                public validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public validation_function(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if(y_diff == 0 && x_diff != 0) {
@@ -242,7 +246,7 @@ namespace PlayeChessEngine {
                     super(piece_type.r, is_white, x, y);
                 }
 
-                validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                validation_function(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if(x_diff * y_diff == 0 && x_diff != y_diff) {
@@ -259,7 +263,7 @@ namespace PlayeChessEngine {
                     super(piece_type.n, is_white, x, y);
                 }
 
-                public validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public validation_function(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if((Math.abs(x_diff) == 2 && Math.abs(y_diff) == 1) || (Math.abs(x_diff) == 1 && Math.abs(y_diff) == 2)) {
@@ -274,7 +278,7 @@ namespace PlayeChessEngine {
                     super(piece_type.b, is_white, x, y);
                 }
 
-                public validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public validation_function(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if(Math.abs(x_diff) == Math.abs(y_diff) && x_diff != 0) {
@@ -291,7 +295,7 @@ namespace PlayeChessEngine {
                     super(piece_type.q, is_white, x, y);
                 }
 
-                public validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public validation_function(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if((Math.abs(x_diff) == Math.abs(y_diff) && x_diff != 0) || (x_diff * y_diff == 0 && x_diff != y_diff)) {
@@ -308,7 +312,7 @@ namespace PlayeChessEngine {
                     super(piece_type.k, is_white, x, y);
                 }
 
-                public validation_function(board: [[Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece], [Piece, Piece, Piece, Piece, Piece, Piece, Piece, Piece]], x_final: number, y_final: number): boolean {
+                public validation_function(board: ChessBoard, x_final: number, y_final: number): boolean {
                     let x_diff: number = x_final - this.coords[0];
                     let y_diff: number = y_final - this.coords[1];
                     if(Math.abs(x_diff) <= 1 && Math.abs(y_diff) <= 1) {
@@ -319,12 +323,14 @@ namespace PlayeChessEngine {
             }
         } // namespace pieces
 
+        type ChessBoard = [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]];
+
         export class Board {
-            private Board: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]];
-            public set board(board: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]]) {
+            private Board: ChessBoard;
+            public set board(board: ChessBoard) {
                 this.Board = board;
             }
-            public get board(): [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]] {
+            public get board(): ChessBoard {
                 return this.Board;
             }
 
@@ -421,7 +427,7 @@ namespace PlayeChessEngine {
                 });
             }
 
-            public print_board(moves: Array<Array<number>> =[], board: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]] = this.Board): void {
+            public print_board(moves: Array<Array<number>> =[], board: ChessBoard = this.Board): void {
                 let board_str: string = "";
                 board_str += "  #-----------------#\n";
                 for(let i = 0; i < 8; i++) {
@@ -469,7 +475,7 @@ namespace PlayeChessEngine {
                 return moves;
             }
 
-            public get_all_moves(brd: [[pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece], [pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece, pieces.Piece]], white:boolean, from_premove:boolean=false): Array<Move> {
+            public get_all_moves(brd: ChessBoard, white:boolean, from_premove:boolean=false): Array<Move> {
                 let moves: Array<Move> = [];
                 for(let i = 0; i < 8; i++) {
                     for(let j = 0; j < 8; j++) {
@@ -567,22 +573,20 @@ namespace PlayeChessEngine {
                     row.forEach(piece => {
                         if(piece == null) return;
                         switch(piece.type) {
-                            case 0:
+                            case pieces.piece_type.p:
                                 return false;
-                            case 1:
+                            case pieces.piece_type.n:
                                 num_knights++;
                                 break;
-                            case 2:
+                            case pieces.piece_type.b:
                                 num_bishops++;
                                 break;
-                            case 3:
-                                return false;
-                            case 4:
-                                return false;
-                            case 5:
+                            case pieces.piece_type.r:
+                            case pieces.piece_type.q:
                                 return false;
                             default: break;
                         }
+                        return;
                     })
                 });
                 if(num_knights == 0 && num_bishops == 0) 
