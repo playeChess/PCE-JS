@@ -6,7 +6,7 @@
  > Github: https://github.com/playeChess/PCE-TS
 */
 
-namespace PlayeChessEngine {
+export namespace PlayeChessEngine {
     export class Move {
         private StartCoords: Array<number>;
         public get start_coords() : Array<number> {
@@ -45,9 +45,9 @@ namespace PlayeChessEngine {
         }
     }
 
-    namespace board {
+    export namespace board {
 
-        namespace pieces {
+        export namespace pieces {
 
             export enum piece_type { p, r, n, b, q, k };
 
@@ -334,6 +334,14 @@ namespace PlayeChessEngine {
                 return this.Board;
             }
 
+            private Boards: Array<Board>;
+            public set boards(boards: Array<Board>) {
+                this.Boards = boards;
+            }
+            public get boards(): Array<Board> {
+                return this.Boards;
+            }
+
             private Moves: Array<Move>;
             public set moves(moves: Array<Move>) {
                 this.Moves = moves;
@@ -544,7 +552,7 @@ namespace PlayeChessEngine {
                     move.is_valid = true;
                 }
                 let start_ep_coords = this.get_en_passant(this.moves, white);
-                if(start_ep_coords == [move.start_coords[0], move.start_coords[1]]) {
+                if(start_ep_coords.toString() === [move.start_coords[0], move.start_coords[1]].toString()) {
                     let side = this.moves[this.moves.length-1].end_coords[0] - start_ep_coords[0];
                     let offset = white ? 1 : -1;
                     if(move.end_coords[0] == start_ep_coords[0] + offset && move.end_coords[1] == start_ep_coords[1] + side) {
@@ -618,11 +626,77 @@ namespace PlayeChessEngine {
                 this.transfer_piece([row, kingside ? 7 : 0], [row, kingside ? 5 : 3]);
             }
 
-            public get_promotion(white: boolean) {
-                // TODO : Implement
+            public get_promotion(white: boolean): [number, number] {
+                let row = white ? 0 : 7;
+                for(let i = 0; i < 8; i++) {
+                    if(this.board[row][i] != null) {
+                        if(this.board[row][i].type == pieces.piece_type.p && this.board[row][i].is_white == white)
+                            return [row, i];
+                    }
+                }
+                return [-1, -1];
+            }
+
+            public promote(white: boolean, type: pieces.piece_type): void {
+                let [row, col] = this.get_promotion(white);
+                if(row == -1 || col == -1) return;
+                if(type == pieces.piece_type.r)
+                    this.board[row][col] = new pieces.Rook(white, row, col);
+                else if(type == pieces.piece_type.n)
+                    this.board[row][col] = new pieces.Knight(white, row, col);
+                else if(type == pieces.piece_type.b)
+                    this.board[row][col] = new pieces.Bishop(white, row, col);
+                else if(type == pieces.piece_type.q)
+                    this.board[row][col] = new pieces.Queen(white, row, col);
+            }
+
+            public check_threefold_repetition(boards: Array<Board>,white: boolean): boolean {
+                let count = 1;
+                for(let i = 0; i < boards.length; i++) {
+                    if(this.compare(boards[i]) && ((i % 2 == 0) == white))
+                    count++;
+                }
+                return count >= 3;
+            }
+
+            public get_en_passant_side(last_move: Move, white: boolean, side: number, offset: number): [number, number] {
+                if(last_move.end_coords[1] + side < 0 || last_move.end_coords[1] + side > 7) return [-1, -1];
+                if(this.board[last_move.end_coords[0]][last_move.end_coords[1] + side] != null) {
+                    let ep_piece: pieces.Piece = this.board[last_move.end_coords[0]][last_move.end_coords[1] + side];
+                    if(ep_piece.type == pieces.piece_type.p && ep_piece.is_white == white)
+                        return [last_move.end_coords[0] + offset, last_move.end_coords[1] + side];
+                }
+                return [-1, -1];
+            }
+
+            public get_en_passant(moves: Array<Move>, white: boolean): [number, number] {
+                if(moves.length == 0) return [-1, -1];
+                let last_move = moves[moves.length-1];
+                let offset: number = white ? -2 : 2;
+                let moved_piece = this.board[last_move.end_coords[0]][last_move.end_coords[1]];
+                if(last_move.end_coords[0] == last_move.start_coords[0] + offset && moved_piece.type == pieces.piece_type.p && moved_piece.is_white == white) {
+                    let tmp: [number, number] = this.get_en_passant_side(last_move, white, -1, offset);
+                    if(tmp.toString() != [-1, -1].toString())
+                        return tmp;
+                    return this.get_en_passant_side(last_move, white, 1, offset);
+                }
+                return [-1, -1];
             }
         }
     } // namespace board
+
+    export class PCE {
+        private moves: Array<Move>;
+        private boards: Array<board.Board>;
+        private board: board.Board = new board.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        private move_countdown: number = 50;
+
+        public move(white: boolean) {
+            this.board.moves = this.moves;
+            this.board.boards = this.boards;
+
+        }
+    }
 } // namespace PlayeChessEngine
 
 /**
