@@ -8,13 +8,13 @@
 
 export namespace PlayeChessEngine {
     export class Move {
-        private StartCoords: Array<number>;
-        public get start_coords() : Array<number> {
+        private StartCoords: [number, number];
+        public get start_coords() : [number, number] {
             return this.StartCoords;
         }
 
-        private EndCoords: Array<number>;
-        public get end_coords() : Array<number> {
+        private EndCoords: [number, number];
+        public get end_coords() : [number, number] {
             return this.EndCoords;
         }
 
@@ -60,11 +60,11 @@ export namespace PlayeChessEngine {
                     this.Type = type;
                 }
 
-                private Coords: Array<number>;
-                public get coords(): Array<number> {
+                private Coords: [number, number];
+                public get coords(): [number, number] {
                     return this.Coords;
                 }
-                public set coords(coords: Array<number>) {
+                public set coords(coords: [number, number]) {
                     this.Coords = coords;
                 }
 
@@ -95,7 +95,7 @@ export namespace PlayeChessEngine {
                 public abstract validation_function(board: ChessBoard, x_final: number, y_final: number): boolean;
 
                 public validate_validation(board: ChessBoard, x_final: number, y_final: number): boolean {
-                    if(board[x_final][y_final] == null) {
+                    if(board[x_final][y_final] == undefined) {
                         return true;
                     }
                     if(board[x_final][y_final].is_white != this.is_white) {
@@ -110,13 +110,13 @@ export namespace PlayeChessEngine {
                     if(x_diff == 0) {
                         if(y_diff > 0) {
                             for(let i = 1; i < y_diff; i++) {
-                                if(board[this.coords[0]][this.coords[1] + i] != null) {
+                                if(board[this.coords[0]][this.coords[1] + i] != undefined) {
                                     return false;
                                 }
                             }
                         } else {
                             for(let i = 0; i < Math.abs(y_diff); i++) {
-                                if(board[this.coords[0]][this.coords[1] - i] != null) {
+                                if(board[this.coords[0]][this.coords[1] - i] != undefined) {
                                     return false;
                                 }
                             }
@@ -124,13 +124,13 @@ export namespace PlayeChessEngine {
                     } else if(y_diff == 0) {
                         if(x_diff > 0) {
                             for(let i = 1; i < x_diff; i++) {
-                                if(board[this.coords[0] + i][this.coords[1]] != null) {
+                                if(board[this.coords[0] + i][this.coords[1]] != undefined) {
                                     return false;
                                 }
                             }
                         } else {
                             for(let i = 0; i < Math.abs(x_diff); i++) {
-                                if(board[this.coords[0] - i][this.coords[1]] != null) {
+                                if(board[this.coords[0] - i][this.coords[1]] != undefined) {
                                     return false;
                                 }
                             }
@@ -138,25 +138,25 @@ export namespace PlayeChessEngine {
                     } else if(Math.abs(x_diff) == Math.abs(y_diff)) {
                         if(x_diff > 0 && y_diff > 0) {
                             for(let i = 1; i < x_diff; i++) {
-                                if(board[this.coords[0] + i][this.coords[1] + i] != null) {
+                                if(board[this.coords[0] + i][this.coords[1] + i] != undefined) {
                                     return false;
                                 }
                             }
                         } else if(x_diff > 0 && y_diff < 0) {
                             for(let i = 1; i < x_diff; i++) {
-                                if(board[this.coords[0] + i][this.coords[1] - i] != null) {
+                                if(board[this.coords[0] + i][this.coords[1] - i] != undefined) {
                                     return false;
                                 }
                             }
                         } else if(x_diff < 0 && y_diff > 0) {
                             for(let i = 0; i < Math.abs(x_diff); i++) {
-                                if(board[this.coords[0] - i][this.coords[1] + i] != null) {
+                                if(board[this.coords[0] - i][this.coords[1] + i] != undefined) {
                                     return false;
                                 }
                             }
                         } else if(x_diff < 0 && y_diff < 0) {
                             for(let i = 0; i < Math.abs(x_diff); i++) {
-                                if(board[this.coords[0] - i][this.coords[1] - i] != null) {
+                                if(board[this.coords[0] - i][this.coords[1] - i] != undefined) {
                                     return false;
                                 }
                             }
@@ -195,21 +195,21 @@ export namespace PlayeChessEngine {
                     if(y_diff == 0 && x_diff != 0) {
                         if(this.is_white) {
                             if(x_diff == 1) {
-                                if(board[x_final][y_final] == null) {
+                                if(board[x_final][y_final] == undefined) {
                                     return true;
                                 } 
                             } else if(x_diff == 2) {
-                                if(!this.has_moved && board[x_final][y_final] == null) {
+                                if(!this.has_moved && board[x_final][y_final] == undefined) {
                                     return true;
                                 }
                             }
                         } else {
                             if(x_diff == -1) {
-                                if(board[x_final][y_final] == null) {
+                                if(board[x_final][y_final] == undefined) {
                                     return true;
                                 } 
                             } else if(x_diff == -2) {
-                                if(!this.has_moved && board[x_final][y_final] == null) {
+                                if(!this.has_moved && board[x_final][y_final] == undefined) {
                                     return true;
                                 }
                             }
@@ -217,21 +217,21 @@ export namespace PlayeChessEngine {
                     } else if(Math.abs(x_diff) == 1 && Math.abs(y_diff) == 1) {
                         if(this.is_white) {
                             if(x_diff == 1 && y_diff == 1) {
-                                if(board[x_final][y_final] != null && !board[x_final][y_final].is_white) {
+                                if(board[x_final][y_final] != undefined && !board[x_final][y_final].is_white) {
                                     return true;
                                 }
                             } else if(x_diff == 1 && y_diff == -1) {
-                                if(board[x_final][y_final] != null && !board[x_final][y_final].is_white) {
+                                if(board[x_final][y_final] != undefined && !board[x_final][y_final].is_white) {
                                     return true;
                                 }
                             }
                         } else {
                             if(x_diff == -1 && y_diff == 1) {
-                                if(board[x_final][y_final] != null && board[x_final][y_final].is_white) {
+                                if(board[x_final][y_final] != undefined && board[x_final][y_final].is_white) {
                                     return true;
                                 }
                             } else if(x_diff == -1 && y_diff == -1) {
-                                if(board[x_final][y_final] != null && board[x_final][y_final].is_white) {
+                                if(board[x_final][y_final] != undefined && board[x_final][y_final].is_white) {
                                     return true;
                                 }
                             }
@@ -450,7 +450,7 @@ export namespace PlayeChessEngine {
                             }
                         }
                         if(skip) continue;
-                        if(board[7 - i][j] == null) {
+                        if(board[7 - i][j] == undefined) {
                             board_str += "  ";
                         } else {
                             board_str += board[7 - i][j].show() + " ";
@@ -467,7 +467,7 @@ export namespace PlayeChessEngine {
                 let moves: Array<Move> = [];
                 for(let i = 0; i < 8; i++) {
                     for(let j = 0; j < 8; j++) {
-                        if(this.Board[i][j] == null) continue;
+                        if(this.Board[i][j] == undefined) continue;
                         if(this.Board[i][j].is_white != this.white_turn) continue;
                         if(this.board[x][y].validation_function(this.board, i, j)) {
                             let move: Move = new Move(i, j, x, y);
@@ -487,7 +487,7 @@ export namespace PlayeChessEngine {
                 let moves: Array<Move> = [];
                 for(let i = 0; i < 8; i++) {
                     for(let j = 0; j < 8; j++) {
-                        if(brd[i][j] == null) continue;
+                        if(brd[i][j] == undefined) continue;
                         if(brd[i][j].is_white != white) continue;
                         let tmp_moves: Array<Move> = this.get_moves(i, j, from_premove);
                         for(let k = 0; k < tmp_moves.length; k++) {
@@ -502,7 +502,7 @@ export namespace PlayeChessEngine {
                 let moves: Array<Array<number>> = [];
                 for(let i = 0; i < 8; i++) {
                     for(let j = 0; j < 8; j++) {
-                        if(this.board[i][j] == null) continue;
+                        if(this.board[i][j] == undefined) continue;
                         if(this.board[i][j].is_white != white) continue;
                         let tmp_moves: Array<Move> = this.get_moves(i, j, from_premove);
                         for(let k = 0; k < tmp_moves.length; k++) {
@@ -522,12 +522,13 @@ export namespace PlayeChessEngine {
                 return false;
             }
 
-            public transfer_piece(start_coords: Array<number>, end_coords: Array<number>): void {
+            public transfer_piece(start_coords: [number, number], end_coords: [number, number]): void {
                 let tmp = this.board[start_coords[0]][start_coords[1]];
                 this.board[start_coords[0]][start_coords[1]] = this.board[end_coords[0]][end_coords[1]];
                 this.board[end_coords[0]][end_coords[1]] = tmp;
                 this.board[start_coords[0]][start_coords[1]].coords = start_coords;
                 this.board[end_coords[0]][end_coords[1]].coords = end_coords;
+                delete this.board[start_coords[0]][start_coords[1]];
             }
 
             // Variant
@@ -540,14 +541,14 @@ export namespace PlayeChessEngine {
             }
 
             public move(move: Move, white: boolean): Move {
-                if(this.board[move.start_coords[0]][move.start_coords[1]] == null) {
+                if(this.board[move.start_coords[0]][move.start_coords[1]] == undefined) {
                     move.is_valid = false;
                     return move;
                 } if(this.board[move.start_coords[0]][move.start_coords[1]].is_white != white) {
                     move.is_valid = false;
                     return move;
                 } if(this.get_moves(move.start_coords[0], move.start_coords[1]).includes(move)) {
-                    move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]] != null;
+                    move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]] != undefined;
                     this.transfer_piece(move.start_coords, move.end_coords);
                     move.is_valid = true;
                 }
@@ -579,7 +580,7 @@ export namespace PlayeChessEngine {
                 let num_bishops: number = 0;
                 this.board.forEach(row => {
                     row.forEach(piece => {
-                        if(piece == null) return;
+                        if(piece == undefined) return;
                         switch(piece.type) {
                             case pieces.piece_type.p:
                                 return false;
@@ -605,15 +606,15 @@ export namespace PlayeChessEngine {
             public can_castle(white: boolean, kingside: boolean): boolean {
                 let row = white ? 7 : 0;
                 let king = this.board[row][4];
-                if(king == null) return false;
+                if(king == undefined) return false;
                 if(king.has_moved) return false;
                 let rook = this.board[row][kingside ? 7 : 0];
-                if(rook == null) return false;
+                if(rook == undefined) return false;
                 if(rook.has_moved) return false;
                 let start = kingside ? 5 : 1;
                 let end = kingside ? 7 : 3;
                 for(let i = start; i < end; i++) {
-                    if(this.board[row][i] != null || this.get_all_landing_moves(!white).includes([row, i])) return false;
+                    if(this.board[row][i] != undefined || this.get_all_landing_moves(!white).includes([row, i])) return false;
                 }
                 return true;
             }
@@ -629,7 +630,7 @@ export namespace PlayeChessEngine {
             public get_promotion(white: boolean): [number, number] {
                 let row = white ? 0 : 7;
                 for(let i = 0; i < 8; i++) {
-                    if(this.board[row][i] != null) {
+                    if(this.board[row][i] != undefined) {
                         if(this.board[row][i].type == pieces.piece_type.p && this.board[row][i].is_white == white)
                             return [row, i];
                     }
@@ -661,7 +662,7 @@ export namespace PlayeChessEngine {
 
             public get_en_passant_side(last_move: Move, white: boolean, side: number, offset: number): [number, number] {
                 if(last_move.end_coords[1] + side < 0 || last_move.end_coords[1] + side > 7) return [-1, -1];
-                if(this.board[last_move.end_coords[0]][last_move.end_coords[1] + side] != null) {
+                if(this.board[last_move.end_coords[0]][last_move.end_coords[1] + side] != undefined) {
                     let ep_piece: pieces.Piece = this.board[last_move.end_coords[0]][last_move.end_coords[1] + side];
                     if(ep_piece.type == pieces.piece_type.p && ep_piece.is_white == white)
                         return [last_move.end_coords[0] + offset, last_move.end_coords[1] + side];
@@ -681,6 +682,10 @@ export namespace PlayeChessEngine {
                     return this.get_en_passant_side(last_move, white, 1, offset);
                 }
                 return [-1, -1];
+            }
+
+            public en_passant(start_coords: [number, number], end_coords: [number, number], white: boolean): void {
+                this.transfer_piece(start_coords, end_coords);
             }
         }
     } // namespace board
