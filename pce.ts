@@ -697,12 +697,147 @@ export namespace PlayeChessEngine {
         private move_countdown: number = 50;
 
         public move(white: boolean) {
+            console.clear();
             this.board.moves = this.moves;
             this.board.boards = this.boards;
-
+            let move
         }
     }
 } // namespace PlayeChessEngine
+
+/*
+			bool move(bool white) {
+				this->clear_screen();
+				this->board.set_moves(this->moves);
+				this->board.set_white_turn(white);
+				std::string move;
+				if (white)
+					std::cout << "> White to play <" << std::endl;
+				else
+					std::cout << "> Black to play <" << std::endl;
+				std::vector<Move> color_moves = this->board.get_all_moves(this->board.get_board(), white);
+				for (auto move : color_moves) {
+					std::cout << move.show() << std::endl;
+				}
+				this->board.print_board(this->board.get_all_landing_moves(this->board.get_board(), white));
+				bool valid = false;
+				while (!valid) {
+					do {
+						std::cout << "> ";
+						std::cin >> move;
+					} while (move.length() != 4 && move != "exit" && move != "O-O" && move != "O-O-O");
+					if (move == "exit")
+						return true;
+					if (move == "O-O") {
+						if (this->board.can_castle(white, true)) {
+							this->board.castle(white, true);
+							return false;
+						}
+					}
+					if (move == "O-O-O") {
+						if (this->board.can_castle(white, false)) {
+							this->board.castle(white, false);
+							return false;
+						}
+					}
+                    
+					Move move_obj = Move(move[1] - '1', move[0] - 'a', move[3] - '1', move[2] - 'a');
+					board::pieces::piece_type type = this->board.get_board()[move_obj.get_start_coords()[0]][move_obj.get_start_coords()[1]]->get_type();
+					move_obj = this->board.move(this->moves, move_obj, white);
+
+					valid = move_obj.get_valid();
+
+					if (valid) {
+						this->moves.push_back(move_obj);
+						this->boards.push_back(this->board);
+					}
+					
+					if(!move_obj.get_capture() || type == board::pieces::piece_type::p)
+						this->move_countdown = 50;
+					else
+						this->move_countdown--;
+
+					if(type == board::pieces::piece_type::p) {
+						if(this->board.get_promotion(white) != std::array{-1, -1}) {
+							std::string promotion;
+							std::cout << "Promote to (Q, R, B, N): ";
+							std::cin >> promotion;
+							board::pieces::piece_type promotion_type = board::pieces::piece_type::q;
+							if(promotion == "R")
+								promotion_type = board::pieces::piece_type::r;
+							else if(promotion == "B")
+								promotion_type = board::pieces::piece_type::b;
+							else if(promotion == "N")
+								promotion_type = board::pieces::piece_type::n;
+							this->board.promote(white, this->board.get_promotion(white), promotion_type);
+						}
+					}
+				}
+				return false;
+			}
+
+		public:
+			/**
+			* @brief Construct a new PCE object
+			*
+			*/
+			PCE() {}
+
+			/**
+			* @brief Starts the game
+			*
+			*/
+			void main() {
+				int move_count = 0;
+				bool break_loop = false;
+				this->boards.push_back(this->board);
+				while (true) {
+					bool white = move_count % 2 == 0;
+					break_loop = this->move(white);
+					if (break_loop)
+						break;
+					if (this->board.status(!white) == 1) {
+						this->clear_screen();
+						this->board.print_board();
+						if (white)
+							std::cout << "White wins (checkmate)" << std::endl;
+						else
+							std::cout << "Black wins (checkmate)" << std::endl;
+						break;
+					} else if (this->board.status(!white) == 2) {
+						this->clear_screen();
+						this->board.print_board();
+						std::cout << "Draw (stalemate)" << std::endl;
+						break;
+					} else if(this->board.insufficient_material()) {
+						this->clear_screen();
+						this->board.print_board();
+						std::cout << "Draw (insufficient material)" << std::endl;
+						break;
+					} else if(this->move_countdown == 0) {
+						this->clear_screen();
+						this->board.print_board();
+						std::cout << "Draw (50 move rule)" << std::endl;
+						break;
+					} else if(this->board.check_threefold_repetition(this->boards, white)) {
+						this->clear_screen();
+						this->board.print_board();
+						std::cout << "Draw (threefold repetition)" << std::endl;
+						break;
+					}
+					move_count++;
+				}
+				for (int i = 0; i < this->moves.size(); i += 2) {
+					std::cout << i / 2 + 1 << ".. " << this->moves[i].show();
+					if (i + 1 < this->moves.size())
+						std::cout << " " << this->moves[i + 1].show() << std::endl;
+					else
+						std::cout << std::endl;
+				}
+			}
+	};
+} // namespace PlayeChessEngine
+*/
 
 /**
  * Fonctionnement
