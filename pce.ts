@@ -6,6 +6,8 @@
  > Github: https://github.com/playeChess/PCE-TS
 */
 
+const prompt = require('prompt-sync')();
+
 export namespace PlayeChessEngine {
     export class Move {
         private StartCoords: [number, number];
@@ -700,64 +702,77 @@ export namespace PlayeChessEngine {
             console.clear();
             this.board.moves = this.moves;
             this.board.boards = this.boards;
-            let move
+            this.board.white_turn = white;
+            if(white)
+                console.log("> White to play <");
+            else
+                console.log("> Black to play <");
+            let color_moves = this.board.get_all_moves(this.board.board, white);
+            for(let move of color_moves) {
+                console.log(move.show());
+            }
+            this.board.print_board(this.board.get_all_landing_moves(white));
+            let valid:boolean = false;
+            while(!valid) {
+                let move: string = '';
+                do {
+                    let move = prompt('> ');
+                } while (move.length != 4 && move != "exit" && move != "O-O" && move != "O-O-O");
+                if(move == 'exit')
+                    return true;
+                if(move == "O-O") {
+                    if(this.board.can_castle(white, true)) {
+                        this.board.castle(white, true);
+                        return false;
+                    }
+                }
+                if(move == "O-O-O") {
+                    if(this.board.can_castle(white, false)) {
+                        this.board.castle(white, false);
+                        return false;
+                    }
+                }
+
+                let move_obj = new Move(move.charCodeAt(1) - '1'.charCodeAt(0), move.charCodeAt(0) - 'a'.charCodeAt(0), move.charCodeAt(3) - '1'.charCodeAt(0), move.charCodeAt(2) - 'a'.charCodeAt(0));
+                let type = this.board.board[move_obj.start_coords[0]][move_obj.start_coords[1]].type;
+
+                move_obj = this.board.move(move_obj, white);
+                valid = move_obj.is_valid;
+
+                if (valid) {
+                    this.moves.push(move_obj);
+                    this.boards.push(this.board);
+                }
+
+                if(!move_obj.is_capture || type == board.pieces.piece_type.p)
+                    this.move_countdown = 50;
+                else
+                    this.move_countdown--;
+
+                if(type == board.pieces.piece_type.p) {
+                    // TODO Comparison function needed
+                    if(this.board.get_promotion(white) != [-1, -1]) {
+                        let promotion: string = '';
+                        do {
+                            promotion = prompt('Promote to (Q, R, B, N): ');
+                        } while (promotion != "Q" && promotion != "R" && promotion != "B" && promotion != "N");
+                        let promotion_type = board.pieces.piece_type.q;
+                        if(promotion == "R")
+                            promotion_type = board.pieces.piece_type.r;
+                        else if(promotion == "B")
+                            promotion_type = board.pieces.piece_type.b;
+                        else if(promotion == "N")
+                            promotion_type = board.pieces.piece_type.n;
+                        this.board.promote(white, this.board.get_promotion(white), promotion_type);
+                    }
+                }
+            }
         }
     }
 } // namespace PlayeChessEngine
 
 /*
-			bool move(bool white) {
-				this->clear_screen();
-				this->board.set_moves(this->moves);
-				this->board.set_white_turn(white);
-				std::string move;
-				if (white)
-					std::cout << "> White to play <" << std::endl;
-				else
-					std::cout << "> Black to play <" << std::endl;
-				std::vector<Move> color_moves = this->board.get_all_moves(this->board.get_board(), white);
-				for (auto move : color_moves) {
-					std::cout << move.show() << std::endl;
-				}
-				this->board.print_board(this->board.get_all_landing_moves(this->board.get_board(), white));
-				bool valid = false;
-				while (!valid) {
-					do {
-						std::cout << "> ";
-						std::cin >> move;
-					} while (move.length() != 4 && move != "exit" && move != "O-O" && move != "O-O-O");
-					if (move == "exit")
-						return true;
-					if (move == "O-O") {
-						if (this->board.can_castle(white, true)) {
-							this->board.castle(white, true);
-							return false;
-						}
-					}
-					if (move == "O-O-O") {
-						if (this->board.can_castle(white, false)) {
-							this->board.castle(white, false);
-							return false;
-						}
-					}
-                    
-					Move move_obj = Move(move[1] - '1', move[0] - 'a', move[3] - '1', move[2] - 'a');
-					board::pieces::piece_type type = this->board.get_board()[move_obj.get_start_coords()[0]][move_obj.get_start_coords()[1]]->get_type();
-					move_obj = this->board.move(this->moves, move_obj, white);
-
-					valid = move_obj.get_valid();
-
-					if (valid) {
-						this->moves.push_back(move_obj);
-						this->boards.push_back(this->board);
-					}
-					
-					if(!move_obj.get_capture() || type == board::pieces::piece_type::p)
-						this->move_countdown = 50;
-					else
-						this->move_countdown--;
-
-					if(type == board::pieces::piece_type::p) {
+                    if(type == board::pieces::piece_type::p) {
 						if(this->board.get_promotion(white) != std::array{-1, -1}) {
 							std::string promotion;
 							std::cout << "Promote to (Q, R, B, N): ";
@@ -777,16 +792,8 @@ export namespace PlayeChessEngine {
 			}
 
 		public:
-			/**
-			* @brief Construct a new PCE object
-			*
-			*/
 			PCE() {}
-
-			/**
-			* @brief Starts the game
-			*
-			*/
+            
 			void main() {
 				int move_count = 0;
 				bool break_loop = false;
