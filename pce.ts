@@ -557,7 +557,7 @@ export namespace PlayeChessEngine {
                     this.transfer_piece(move.start_coords, move.end_coords);
                     move.is_valid = true;
                 }
-                let start_ep_coords = this.get_en_passant(this.moves, white);
+                let start_ep_coords = this.get_en_passant(white);
                 if(start_ep_coords.toString() === [move.start_coords[0], move.start_coords[1]].toString()) {
                     let side = this.moves[this.moves.length-1].end_coords[0] - start_ep_coords[0];
                     let offset = white ? 1 : -1;
@@ -656,16 +656,18 @@ export namespace PlayeChessEngine {
                     this.board[row][col] = new pieces.Queen(white, row, col);
             }
 
-            public check_threefold_repetition(boards: Array<Board>,white: boolean): boolean {
+            public check_threefold_repetition(white: boolean): boolean {
                 let count = 1;
-                for(let i = 0; i < boards.length; i++) {
-                    if(this.compare(boards[i]) && ((i % 2 == 0) == white))
+                for(let i = 0; i < this.boards.length; i++) {
+                    if(this.compare(this.boards[i]) && ((i % 2 == 0) == white))
                     count++;
                 }
                 return count >= 3;
             }
 
-            public get_en_passant_side(last_move: Move, white: boolean, side: number, offset: number): [number, number] {
+            public get_en_passant_side(white: boolean, side: number): [number, number] {
+                let last_move:Move = this.moves[this.moves.length - 1];
+                let offset = white ? -2 : 2;
                 if(last_move.end_coords[1] + side < 0 || last_move.end_coords[1] + side > 7) return [-1, -1];
                 if(this.board[last_move.end_coords[0]][last_move.end_coords[1] + side] != undefined) {
                     let ep_piece: pieces.Piece = this.board[last_move.end_coords[0]][last_move.end_coords[1] + side];
@@ -675,16 +677,15 @@ export namespace PlayeChessEngine {
                 return [-1, -1];
             }
 
-            public get_en_passant(moves: Array<Move>, white: boolean): [number, number] {
-                if(moves.length == 0) return [-1, -1];
-                let last_move = moves[moves.length-1];
-                let offset: number = white ? -2 : 2;
+            public get_en_passant(white: boolean): [number, number] {
+                if(this.moves.length == 0) return [-1, -1];
+                let last_move:Move = this.moves[this.moves.length - 1];
                 let moved_piece = this.board[last_move.end_coords[0]][last_move.end_coords[1]];
-                if(last_move.end_coords[0] == last_move.start_coords[0] + offset && moved_piece.type == pieces.piece_type.p && moved_piece.is_white == white) {
-                    let tmp: [number, number] = this.get_en_passant_side(last_move, white, -1, offset);
-                    if(tmp.toString() != [-1, -1].toString())
-                        return tmp;
-                    return this.get_en_passant_side(last_move, white, 1, offset);
+                if(last_move.end_coords[0] == last_move.start_coords[0] + (white ? -2 : 2) && moved_piece.type == pieces.piece_type.p && moved_piece.is_white == white) {
+                    let nside: [number, number] = this.get_en_passant_side(white, -1);
+                    if(nside.toString() != [-1, -1].toString())
+                        return nside;
+                    return this.get_en_passant_side(white, 1);
                 }
                 return [-1, -1];
             }
@@ -808,7 +809,7 @@ export namespace PlayeChessEngine {
                     this.board.print_board();
                     console.log("Draw (50 move rule)");
                     break;
-                } else if(this.board.check_threefold_repetition(this.boards, white)) {
+                } else if(this.board.check_threefold_repetition(white)) {
                     console.clear();
                     this.board.print_board();
                     console.log("Draw (threefold repetition)");
