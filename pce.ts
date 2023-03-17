@@ -643,9 +643,9 @@ export namespace PlayeChessEngine {
                 return [-1, -1];
             }
 
-            public promote(white: boolean, type: pieces.piece_type): void {
+            public promote(white: boolean, type: pieces.piece_type): boolean {
                 let [row, col] = this.get_promotion(white);
-                if(row == -1 || col == -1) return;
+                if(row == -1 || col == -1) return false;
                 if(type == pieces.piece_type.r)
                     this.board[row][col] = new pieces.Rook(white, row, col);
                 else if(type == pieces.piece_type.n)
@@ -654,6 +654,7 @@ export namespace PlayeChessEngine {
                     this.board[row][col] = new pieces.Bishop(white, row, col);
                 else if(type == pieces.piece_type.q)
                     this.board[row][col] = new pieces.Queen(white, row, col);
+                return true;
             }
 
             public check_threefold_repetition(white: boolean): boolean {
@@ -702,7 +703,48 @@ export namespace PlayeChessEngine {
         private board: board.Board;
         private move_countdown: number = 50;
 
-        public async move(white: boolean) {
+        public single_move(move:string, white: boolean, auto_promote: board.pieces.piece_type.q): boolean {
+            let valid:boolean = false;
+            if(move == 'exit')
+                return true;
+            if(move == "O-O") {
+                if(this.board.can_castle(white, true)) {
+                    this.board.castle(white, true);
+                    return false;
+                }
+            }
+            if(move == "O-O-O") {
+                if(this.board.can_castle(white, false)) {
+                    this.board.castle(white, false);
+                    return false;
+                }
+            }
+
+            let move_obj = new Move(move.charCodeAt(1) - '1'.charCodeAt(0), move.charCodeAt(0) - 'a'.charCodeAt(0), move.charCodeAt(3) - '1'.charCodeAt(0), move.charCodeAt(2) - 'a'.charCodeAt(0));
+            let type = this.board.board[move_obj.start_coords[0]][move_obj.start_coords[1]].type;
+
+            move_obj = this.board.move(move_obj, white);
+            valid = move_obj.is_valid;
+
+            if (valid) {
+                this.moves.push(move_obj);
+                this.boards.push(this.board);
+            }
+
+            if(!move_obj.is_capture || type == board.pieces.piece_type.p)
+                this.move_countdown = 50;
+            else
+                this.move_countdown--;
+
+            if(type == board.pieces.piece_type.p) {
+                if(this.board.get_promotion(white).toString() != [-1, -1].toString()) {
+                    this.board.promote(white, auto_promote);
+                }
+            }
+            return valid;
+        }
+
+        public move(white: boolean, auto_promote: board.pieces.piece_type.q) {
             console.clear();
             this.board.moves = this.moves;
             this.board.boards = this.boards;
@@ -718,57 +760,7 @@ export namespace PlayeChessEngine {
             this.board.print_board(this.board.get_all_landing_moves(white));
             let valid:boolean = false;
             while(!valid) {
-                let move: string = '';
-                do {
-                    let move = await rl.question('> ');
-                } while (move.length != 4 && move != "exit" && move != "O-O" && move != "O-O-O");
-                if(move == 'exit')
-                    return true;
-                if(move == "O-O") {
-                    if(this.board.can_castle(white, true)) {
-                        this.board.castle(white, true);
-                        return false;
-                    }
-                }
-                if(move == "O-O-O") {
-                    if(this.board.can_castle(white, false)) {
-                        this.board.castle(white, false);
-                        return false;
-                    }
-                }
-
-                let move_obj = new Move(move.charCodeAt(1) - '1'.charCodeAt(0), move.charCodeAt(0) - 'a'.charCodeAt(0), move.charCodeAt(3) - '1'.charCodeAt(0), move.charCodeAt(2) - 'a'.charCodeAt(0));
-                let type = this.board.board[move_obj.start_coords[0]][move_obj.start_coords[1]].type;
-
-                move_obj = this.board.move(move_obj, white);
-                valid = move_obj.is_valid;
-
-                if (valid) {
-                    this.moves.push(move_obj);
-                    this.boards.push(this.board);
-                }
-
-                if(!move_obj.is_capture || type == board.pieces.piece_type.p)
-                    this.move_countdown = 50;
-                else
-                    this.move_countdown--;
-
-                if(type == board.pieces.piece_type.p) {
-                    if(this.board.get_promotion(white).toString() != [-1, -1].toString()) {
-                        let promotion: string = '';
-                        do {
-                            promotion = await rl.question('Promote to (Q, R, B, N): ');
-                        } while (promotion != "Q" && promotion != "R" && promotion != "B" && promotion != "N");
-                        let promotion_type = board.pieces.piece_type.q;
-                        if(promotion == "R")
-                            promotion_type = board.pieces.piece_type.r;
-                        else if(promotion == "B")
-                            promotion_type = board.pieces.piece_type.b;
-                        else if(promotion == "N")
-                            promotion_type = board.pieces.piece_type.n;
-                        this.board.promote(white, promotion_type);
-                    }
-                }
+                //valid = this.single_move();
             }
             return false;
         }
@@ -777,7 +769,7 @@ export namespace PlayeChessEngine {
             this.board = new board.Board(fen);
         }
 
-        public async main() {
+        public main() {
             let move_count = 0;
             let break_loop = false;
             this.boards.push(this.board);
