@@ -1,6 +1,13 @@
-// export * from './pce';
+let a = {
+	b: {
+		c: {}
+	}
+}
 
-import { PlayeChessEngine } from './pce.js';
+a.b.c['d'] = class d {
+	constructor() {
+		console.log('d')
+	}
+}
 
-let pce = new PlayeChessEngine.PCE("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-pce.main();
+let b = new a.b.c['d']()
