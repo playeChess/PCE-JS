@@ -20,7 +20,8 @@ var PlayeChessEngine = {
 			King: class King {}
 		},
 		Board: class Board {}
-	}
+	},
+	PCE: class PCE {}
 }
 
 PlayeChessEngine.Move = class Move {
