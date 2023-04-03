@@ -477,11 +477,8 @@ PlayeChessEngine.board.Board = class Board {
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 8; j++) {
 				console.log("Checking " + i + j + " for " + x + y)
-				console.log(this.board)
-				console.log(this.board[x][y].constructor.name)
 				if(this.board[x][y].type == PlayeChessEngine.board.pieces.piece_type.no)
 					continue
-				console.log(this.board[x][y])
 				if (this.board[x][y].validation_function(this.board, i, j)) {
 					console.log("Valid" + i + j + " for " + x + y)
 					let move = new PlayeChessEngine.Move(i, j, x, y)
