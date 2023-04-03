@@ -1,9 +1,9 @@
 /*
- > PCE-TS - Web Implementation of Play eChess Engine
+ > PCE-JS - Web Implementation of PlayeChessEngine (PCE)
  > Code by SinisterIcy
  > Version ALPHA
  > Licensed under the GNU General Public License v3.0
- > Github: https://github.com/playeChess/PCE-TS
+ > Github: https://github.com/playeChess/PCE-JS
 */
 
 var PlayeChessEngine = {
@@ -822,15 +822,21 @@ PlayeChessEngine.PCE = class PCE {
 }
 
 /**
- * Fonctionnement
+ * User Functions
  *
- * export classe PCE:
+ * class PCE:
  *
- * isDraw() -> [bool, (type: string)]
- * isLegal() -> [bool, (board: array 2D)]
- * isWon() -> bool, team: string
+ * PCE.status() -> Gets the status of the game
+ *	->
+ *		status_id:int, -> The status id (0: game ongoing; 1: draw; 2: win)
+ *		(detail_id:int) -> Only for status_id=1 (0: stalemate; 1: insufficient material; 2: 50 moves rule; 3: threefold repetition) and status_id=2 (0: white, 1: black)
  *
- * getMoves() -> array 2D
- * move(start_pos, end_pos)
- *
+ * PCE.getMoves(white) -> Gets all possible moves for a player (white)
+ * 	->
+ * 		moves:array3d[int] -> All the possible moves as [[[move0_start_x, move0_start_y], [move0_end_x, move0_end_y]], [[move1_start_x, move1_start_y], [move1_end_x, move1_end_y]], ...]
+ * 
+ * PCE.move(start_pos:array[int], end_pos:array[int]) -> Moves a piece from start_pos to end_pos
+ * 	->
+ * 		None
+ * 
  */
