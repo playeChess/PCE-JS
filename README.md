@@ -1,7 +1,7 @@
 # PCE-JS
 
-![](https://img.shields.io/badge/version-DEV-ff264a?style=for-the-badge)
-![](https://img.shields.io/badge/Status-In_Progress-ffdf29?style=for-the-badge)
+![](https://img.shields.io/badge/version-DEV-5752ff?style=for-the-badge)
+![](https://img.shields.io/badge/Status-In_Progress-ffaf2e?style=for-the-badge)
 ![](https://img.shields.io/badge/Made%20for-eChess-11482f?style=for-the-badge)
 ![](https://img.shields.io/github/languages/code-size/playeChess/PCE-JS?label=size&style=for-the-badge)
 ![](https://img.shields.io/badge/Made%20in-Javascript-F7DF1E?logo=javascript&style=for-the-badge)
@@ -30,18 +30,18 @@ Gets the status of the game
 - Description: Only for status_id=1 (0: stalemate; 1: insufficient material; 2: 50 moves rule; 3: threefold repetition) and status_id=2 (0: white, 1: black)
 - Optionnal: Yes
 
-### PCE.getMoves(white)
+### PCE.getMoves(start_pos)
 
 #### Description
 
-Gets all possible moves for a player
+Gets all possible moves for a piece
 
 #### Arguments
 
-##### white
+##### start_pos
 
-- Type: bool
-- Description: Whether the player we want his moves is white
+- Type: array[int]
+- Description: The coordiates of the piece to get moves for
 - Optionnal: No
 
 #### Returns
@@ -71,3 +71,10 @@ Moves a piece from start_pos to end_pos
 - Type: array[int]
 - Description: The end coordinates
 - Optionnal: No
+
+## TODO
+
+- [ ] Enums
+  - [ ] status_id
+  - [ ] detail_id (status_id=1)
+  - [ ] detail_id (status_id=2)
