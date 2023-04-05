@@ -21,6 +21,9 @@ var PlayeChessEngine = {
 		},
 		Board: class Board {}
 	},
+	status: {},
+	draw: {},
+	win: {},
 	PCE: class PCE {}
 }
 
@@ -546,39 +549,6 @@ PlayeChessEngine.board.Board = class Board {
 		this.board = Object.assign(new PlayeChessEngine.board.Board(), tmp_board)
 		return is_check
 	}
-	move(move, white) {
-		if (this.board[move.start_coords[0]][move.start_coords[1]].type == PlayeChessEngine.board.pieces.piece_type.no) {
-			move.is_valid = false
-			console.log("No piece at start coords")
-			return move
-		}
-		if (this.board[move.start_coords[0]][move.start_coords[1]].is_white != white) {
-			move.is_valid = false
-			console.log("Wrong color piece at start coords")
-			return move
-		}
-		if (this.get_moves(move.start_coords[0], move.start_coords[1]).includes(move)) {
-			move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]].type != PlayeChessEngine.board.pieces.piece_type.no
-			this.transfer_piece(move.start_coords, move.end_coords)
-			console.log("Move is valid")
-			move.is_valid = true
-		}
-		let start_ep_coords = this.get_en_passant(white)
-		if (start_ep_coords.toString() === [move.start_coords[0], move.start_coords[1]].toString()) {
-			let side = this.moves[this.moves.length - 1].end_coords[0] - start_ep_coords[0]
-			let offset = white ? 1 : -1
-			if (move.end_coords[0] == start_ep_coords[0] + offset && move.end_coords[1] == start_ep_coords[1] + side) {
-				this.en_passant(start_ep_coords, [start_ep_coords[0] + offset, start_ep_coords[1] + side], white)
-				move.is_valid = true
-				move.is_capture = true
-				console.log("Move is valid (en passant)")
-				return move
-			}
-		}
-		console.log("Move is invalid")
-		move.is_valid = false
-		return move
-	}
 	status(white) {
 		if (this.get_all_moves(this.board, white).length == 0) {
 			if (this.is_check(white))
@@ -630,8 +600,9 @@ PlayeChessEngine.board.Board = class Board {
 		let start = kingside ? 5 : 1
 		let end = kingside ? 7 : 3
 		for (let i = start; i < end; i++) {
-			if (this.board[row][i].type != PlayeChessEngine.board.pieces.piece_type.no || this.get_all_landing_moves(!white).includes([row, i]))
+			if (this.board[row][i].type != PlayeChessEngine.board.pieces.piece_type.no || this.get_all_landing_moves(!white).includes([row, i])) {
 				return false
+			}
 		}
 		return true
 	}
@@ -646,24 +617,30 @@ PlayeChessEngine.board.Board = class Board {
 		let row = white ? 0 : 7
 		for (let i = 0; i < 8; i++) {
 			if (this.board[row][i].type != PlayeChessEngine.board.pieces.piece_type.no) {
-				if (this.board[row][i].type == PlayeChessEngine.board.pieces.piece_type.p && this.board[row][i].is_white == white)
+				if (this.board[row][i].type == PlayeChessEngine.board.pieces.piece_type.p && this.board[row][i].is_white == white) {
 					return [row, i]
+				}
 			}
 		}
 		return [-1, -1]
 	}
 	promote(white, type) {
 		let [row, col] = this.get_promotion(white)
-		if (row == -1 || col == -1)
+		if (row == -1 || col == -1) {
 			return false
-		if (type == PlayeChessEngine.board.pieces.piece_type.r)
+		}
+		if (type == PlayeChessEngine.board.pieces.piece_type.r) {
 			this.board[row][col] = new PlayeChessEngine.board.pieces.Rook(white, row, col)
-		else if (type == PlayeChessEngine.board.pieces.piece_type.n)
+		}
+		else if (type == PlayeChessEngine.board.pieces.piece_type.n) {
 			this.board[row][col] = new PlayeChessEngine.board.pieces.Knight(white, row, col)
-		else if (type == PlayeChessEngine.board.pieces.piece_type.b)
+		}
+		else if (type == PlayeChessEngine.board.pieces.piece_type.b) {
 			this.board[row][col] = new PlayeChessEngine.board.pieces.Bishop(white, row, col)
-		else if (type == PlayeChessEngine.board.pieces.piece_type.q)
+		}
+		else if (type == PlayeChessEngine.board.pieces.piece_type.q) {
 			this.board[row][col] = new PlayeChessEngine.board.pieces.Queen(white, row, col)
+		}
 		return true
 	}
 	check_threefold_repetition(white) {
@@ -702,6 +679,56 @@ PlayeChessEngine.board.Board = class Board {
 	en_passant(start_coords, end_coords, white) {
 		this.transfer_piece(start_coords, end_coords)
 	}
+	move_included(moves, move) {
+		moves.forEach(mv => {
+			if(Object.assign(new PlayeChessEngine.Move, mv) == Object.assign(new PlayeChessEngine.Move, move)) {
+				return true
+			}
+		})
+		return false
+	}
+	move(move) {
+		let white = this.board[move.start_coords[0]][move.start_coords[1]].is_white
+		if (this.move_included(this.get_moves(move.start_coords[0], move.start_coords[1]), move)) {
+			move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]].type != PlayeChessEngine.board.pieces.piece_type.no
+			this.transfer_piece(move.start_coords, move.end_coords)
+			console.log("Move is valid")
+			move.is_valid = true
+		}
+		let start_ep_coords = this.get_en_passant(white)
+		if (start_ep_coords.toString() === [move.start_coords[0], move.start_coords[1]].toString()) {
+			let side = this.moves[this.moves.length - 1].end_coords[0] - start_ep_coords[0]
+			let offset = white ? 1 : -1
+			if (move.end_coords[0] == start_ep_coords[0] + offset && move.end_coords[1] == start_ep_coords[1] + side) {
+				this.en_passant(start_ep_coords, [start_ep_coords[0] + offset, start_ep_coords[1] + side], white)
+				move.is_valid = true
+				move.is_capture = true
+				console.log("Move is valid (en passant)")
+				return move
+			}
+		}
+		console.log("Move is invalid")
+		move.is_valid = false
+		return move
+	}
+}
+
+PlayeChessEngine.status = {
+	game_ongoing: 0,
+	draw: 1,
+	win: 2
+}
+
+PlayeChessEngine.draw = {
+	stalemate: 0,
+	insufficient_material: 1,
+	fifty_moves_rule: 2,
+	threefold_repetition: 3
+}
+
+PlayeChessEngine.win = {
+	white: 0,
+	black: 1
 }
 
 PlayeChessEngine.PCE = class PCE {
@@ -709,132 +736,41 @@ PlayeChessEngine.PCE = class PCE {
 	boards = []
 	board = new PlayeChessEngine.board.Board()
 	move_countdown = 50
-	single_move(move, white, auto_promote) {
-		let valid = false
-		if (move == 'exit')
-			return true
-		if (move == "O-O") {
-			if (this.board.can_castle(white, true)) {
-				this.board.castle(white, true)
-				return false
-			}
-		}
-		if (move == "O-O-O") {
-			if (this.board.can_castle(white, false)) {
-				this.board.castle(white, false)
-				return false
-			}
-		}
-		let move_obj = new PlayeChessEngine.Move(move.charCodeAt(1) - '1'.charCodeAt(0), move.charCodeAt(0) - 'a'.charCodeAt(0), move.charCodeAt(3) - '1'.charCodeAt(0), move.charCodeAt(2) - 'a'.charCodeAt(0))
-		let type = this.board.board[move_obj.start_coords[0]][move_obj.start_coords[1]].type
-		move_obj = this.board.move(move_obj, white)
-		console.log(move_obj)
-		valid = move_obj.is_valid
-		if (valid) {
-			this.moves.push(move_obj)
-			this.boards.push(this.board)
-		}
-		if (!move_obj.is_capture || type == PlayeChessEngine.board.pieces.piece_type.p)
-			this.move_countdown = 50
-		else
-			this.move_countdown--
-		if (type == PlayeChessEngine.board.pieces.piece_type.p) {
-			if (this.board.get_promotion(white).toString() != [-1, -1].toString()) {
-				this.board.promote(white, auto_promote)
-			}
-		}
-		return false
+
+	constructor() {
+		this.board.print_board()
 	}
-	move(white) {
-		console.clear()
-		this.board.moves = this.moves
-		this.board.boards = this.boards
-		this.board.white_turn = white
-		if (white)
-			console.log("> White to play <")
-		else
-			console.log("> Black to play <")
-		let color_moves = this.board.get_all_moves(this.board.board, white)
-		for (let move of color_moves) {
-			console.log(move.show())
+
+	status() {
+		if (this.board.status(!white) == 1) {
+			if (white) {
+				return PlayeChessEngine.status.win, PlayeChessEngine.win.white
+			}
+			else {
+				return PlayeChessEngine.status.win, PlayeChessEngine.win.black
+			}
 		}
-		this.board.print_board(this.board.get_all_landing_moves(white))
-		let valid = false
-		while (!valid) {
-			//valid = this.single_move()
+		else if (this.board.status(!white) == 2) {
+			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.stalemate
 		}
-		return false
+		else if (this.board.insufficient_material()) {
+			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.insufficient_material
+		}
+		else if (this.move_countdown == 0) {
+			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.fifty_moves_rule
+		}
+		else if (this.board.check_threefold_repetition(white)) {
+			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.threefold_repetition
+		}
+		return PlayeChessEngine.status.game_ongoing
 	}
-	constructor(fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-		this.board = new PlayeChessEngine.board.Board(fen)
+
+	moves(x, y) {
+		return this.board.get_moves(x, y)
 	}
-	main() {
-		let move_count = 0
-		let break_loop = false
-		this.boards.push(this.board)
-		while (true) {
-			let white = move_count % 2 == 0
-			break_loop = false // this.move(white)
-			if (break_loop)
-				break
-			if (this.board.status(!white) == 1) {
-				console.clear()
-				this.board.print_board()
-				if (white)
-					console.log("White wins (checkmate)")
-				else
-					console.log("Black wins (checkmate)")
-				break
-			}
-			else if (this.board.status(!white) == 2) {
-				console.clear()
-				this.board.print_board()
-				console.log("Draw (stalemate)")
-				break
-			}
-			else if (this.board.insufficient_material()) {
-				console.clear()
-				this.board.print_board()
-				console.log("Draw (insufficient material)")
-				break
-			}
-			else if (this.move_countdown == 0) {
-				console.clear()
-				this.board.print_board()
-				console.log("Draw (50 move rule)")
-				break
-			}
-			else if (this.board.check_threefold_repetition(white)) {
-				console.clear()
-				this.board.print_board()
-				console.log("Draw (threefold repetition)")
-				break
-			}
-			move_count++
-		}
-		for (let i = 0; i < this.moves.length; i += 2) {
-			if (i + 1 < this.moves.length)
-				console.log(i / 2 + 1 + "... " + this.moves[i].show() + " " + this.moves[i + 1].show())
-		}
+
+	move(x0, y0, x1, y1) {
+		let mv = new PlayeChessEngine.Move(x0, y0, x1, y1)
+		this.board.move(mv)
 	}
 }
-
-/**
- * User Functions
- *
- * class PCE:
- *
- * PCE.status() -> Gets the status of the game
- *	->
- *		status_id:int, -> The status id (0: game ongoing; 1: draw; 2: win)
- *		(detail_id:int) -> Only for status_id=1 (0: stalemate; 1: insufficient material; 2: 50 moves rule; 3: threefold repetition) and status_id=2 (0: white, 1: black)
- *
- * PCE.getMoves(white) -> Gets all possible moves for a player (white)
- * 	->
- * 		moves:array3d[int] -> All the possible moves as [[[move0_start_x, move0_start_y], [move0_end_x, move0_end_y]], [[move1_start_x, move1_start_y], [move1_end_x, move1_end_y]], ...]
- * 
- * PCE.move(start_pos:array[int], end_pos:array[int]) -> Moves a piece from start_pos to end_pos
- * 	->
- * 		None
- * 
- */
