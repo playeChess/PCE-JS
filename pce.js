@@ -6,9 +6,18 @@
  > Github: https://github.com/playeChess/PCE-JS
 */
 
+/**
+ * Namespace for PlayeChessEngine
+ */
 var PlayeChessEngine = {
 	Move: class Move {},
+	/**
+	 * Namespace of PlayeChessEngine for board
+	 */
 	board: {
+		/**
+		 * Namespace of PlayeChessEngine for pieces
+		 */
 		pieces: {
 			piece_type: {},
 			Piece: class Piece {},
@@ -27,16 +36,31 @@ var PlayeChessEngine = {
 	PCE: class PCE {}
 }
 
+/**
+ * A move (with start and end coordinates)
+ */
 PlayeChessEngine.Move = class Move {
 	StartCoords
+	/**
+	 * Start coords of the move
+	 * @type {[number, number]}
+	 */
 	get start_coords() {
 		return this.StartCoords
 	}
+	/**
+	 * End coords of the move
+	 * @type {[number, number]}
+	 */
 	EndCoords
 	get end_coords() {
 		return this.EndCoords
 	}
 	IsCapture = false
+	/**
+	 * If the move is a capture
+	 * @type {boolean}
+	 */
 	set is_capture(is_capture) {
 		this.IsCapture = is_capture
 	}
@@ -44,6 +68,10 @@ PlayeChessEngine.Move = class Move {
 		return this.IsCapture
 	}
 	IsValid = false
+	/**
+	 * If the move is valid
+	 * @type {boolean}
+	 */
 	set is_valid(is_valid) {
 		this.IsValid = is_valid
 	}
@@ -54,10 +82,19 @@ PlayeChessEngine.Move = class Move {
 		this.StartCoords = [start_square_x, start_square_y]
 		this.EndCoords = [end_square_x, end_square_y]
 	}
+	/**
+	 * Get a string who contains details about the move
+	 * @returns {string} The details string
+	 */
 	show() {
 		let files = "abcdefgh"
 		return files[this.start_coords[0]] + (this.start_coords[1] + 1) + " -> " + files[this.end_coords[0]] + (this.end_coords[1] + 1)
 	}
+	/**
+	 * Checks if the move is included in an array of moves
+	 * @param {Move[]} moves The array of moves
+	 * @returns {bool} Whether or not the move is included
+	 */
 	included_in(moves) {
 		moves.forEach(mv => {
 			console.log(JSON.stringify(mv))
@@ -80,29 +117,48 @@ PlayeChessEngine.board.pieces.piece_type = {
 	k: 5
 }
 
+/**
+ * A piece (with type, coords and color)
+ */
 PlayeChessEngine.board.pieces.Piece = class Piece {
-	Type = PlayeChessEngine.board.pieces.piece_type.p
+	Type
+	/**
+	 * The type of the piece (-1,no -> no piece, 0,p -> pawn, 1,r -> rook, 2,n -> knight, 3,b -> bishop, 4,q -> queen, 5,k -> king)
+	 * @type {piece_type}
+	 */
 	get type() {
 		return this.Type
 	}
 	set type(type) {
 		this.Type = type
 	}
-	Coords = [-1, -1]
+	Coords
+	/**
+	 * The coordinates of the piece
+	 * @type {[number, number]}
+	 */
 	get coords() {
 		return this.Coords
 	}
 	set coords(coords) {
 		this.Coords = coords
 	}
-	IsWhite = true
+	IsWhite
+	/**
+	 * Whether or not the piece is white
+	 * @type {boolean}
+	 */
 	set is_white(is_white) {
 		this.IsWhite = is_white
 	}
 	get is_white() {
 		return this.IsWhite
 	}
-	HasMoved = false
+	HasMoved
+	/**
+	 * Whether or not the piece has moved yet
+	 * @type {boolean}
+	 */
 	set has_moved(has_moved) {
 		this.HasMoved = has_moved
 	}
@@ -113,7 +169,15 @@ PlayeChessEngine.board.pieces.Piece = class Piece {
 		this.type = type
 		this.is_white = is_white
 		this.coords = [x, y]
+		this.has_moved = false
 	}
+	/**
+	 * Validates the basic rules of the move (can not go where there is one of your pieces)
+	 * @param {Piece[][]} board The board to check on
+	 * @param {number} x_final The final x coordinate
+	 * @param {number} y_final The final y coordinate
+	 * @returns {boolean} Whether or not the move is legal
+	 */
 	validate_validation(board, x_final, y_final) {
 		if (board[x_final][y_final].type == PlayeChessEngine.board.pieces.piece_type.no) {
 			return true
@@ -123,6 +187,13 @@ PlayeChessEngine.board.pieces.Piece = class Piece {
 		}
 		return false
 	}
+	/**
+	 * Checks if the path from a cell to another is clear
+	 * @param {Piece[][]} board The board to check on
+	 * @param {number} x_final The final x coordinate
+	 * @param {number} y_final The final y coordinate
+	 * @returns {boolean} Whether or not the move is legal
+	 */
 	check_path(board, x_final, y_final) {
 		let x_diff = x_final - this.coords[0]
 		let y_diff = y_final - this.coords[1]
@@ -190,6 +261,10 @@ PlayeChessEngine.board.pieces.Piece = class Piece {
 		}
 		return true
 	}
+	/**
+	 * Get a string who contains details about the Piece
+	 * @returns {string} The details string
+	 */
 	show() {
 		if (this.is_white) {
 			let piece_names = ["P", "N", "B", "R", "Q", "K"]
@@ -198,6 +273,11 @@ PlayeChessEngine.board.pieces.Piece = class Piece {
 		let piece_names = ["p", "n", "b", "r", "q", "k"]
 		return piece_names[this.type]
 	}
+	/**
+	 * Checks if a move is the same as another
+	 * @param {Move} other The other move 
+	 * @returns {boolean} Whether or not the moves are eqal
+	 */
 	compare(other) {
 		if (this.type == other.type && this.is_white == other.is_white && this.coords[0] == other.coords[0] && this.coords[1] == other.coords[1]) {
 			return true
@@ -355,6 +435,7 @@ PlayeChessEngine.board.Board = class Board {
 	]
 	set board(board) {
 		console.log("update board")
+		console.trace()
 		this.Board = board
 	}
 	get board() {
@@ -391,7 +472,7 @@ PlayeChessEngine.board.Board = class Board {
 	compare(other) {
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 8; j++) {
-				if (this.Board[i][j].compare(other.Board[i][j])) {
+				if (!this.Board[i][j].compare(other.Board[i][j])) {
 					return false
 				}
 			}
@@ -490,14 +571,13 @@ PlayeChessEngine.board.Board = class Board {
 		if(this.board[x][y].type == PlayeChessEngine.board.pieces.piece_type.no) {
 			return []
 		}
-		console.log(this.board)
+		console.log(JSON.stringify(this.board[x][y]))
 		console.trace()
 		let moves = []
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 8; j++) {
 				console.log("Checking " + x + y + " to " + i + j)
-				console.log(this.board)
-				console.log(this.board[x][y])
+				console.log(JSON.stringify(this.board[x][y]))
 				if(this.board[x][y].type == PlayeChessEngine.board.pieces.piece_type.no)
 					continue
 				if (this.board[x][y].validation_function(this.board, i, j)) {
@@ -561,12 +641,63 @@ PlayeChessEngine.board.Board = class Board {
 		this.board[start_coords[0]][start_coords[1]].coords = start_coords
 		this.board[end_coords[0]][end_coords[1]].coords = end_coords
 	}
+	/**
+	 * 
+	 * @param {Piece[][]} board
+	 * @returns {Piece[][]}
+	 */
+	copy_board(board) {
+		let tmp = [[...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)]]
+		for(let i = 0; i < 8; i++) {
+			for(let j = 0; j < 8; j++) {
+				if(board[i][j] instanceof PlayeChessEngine.board.pieces.Pawn) {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Pawn, board[i][j])
+				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Rook) {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Rook, board[i][j])
+				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Knight) {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Knight, board[i][j])
+				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Bishop) {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Bishop, board[i][j])
+				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Queen) {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Queen, board[i][j])
+				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.King) {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.King, board[i][j])
+				}
+				tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Piece, board)
+			}
+		}
+		return tmp
+	}
+	/**
+	 * 
+	 * @param {Board} board
+	 * @returns {Piece[][]}
+	 */
+	disref_board(board) {
+		return this.copy_board(board.board)
+	}
+	copy(board) {
+		let tmp = new PlayeChessEngine.board.Board()
+		tmp.board = this.disref_board(this)
+		tmp.boards = [...Array(board.boards.length)]
+		for(let i = 0; i < board.boards.length; i++) {
+			tmp.boards[i] = this.copy_board(board.boards[i])
+		}
+		tmp.moves = [...Array(board.moves.length)]
+		for(let i = 0; i < board.moves.length; i++) {
+			tmp.moves[i] = Object.assign(new PlayeChessEngine.Move(), board.moves[i])
+		}
+		tmp.white_turn = board.white_turn
+		return tmp
+	}
 	premove_check(move, white) {
-		console.log("Premove check")
-		let tmp_board = Object.assign(new PlayeChessEngine.board.Board(), this.board)
+		console.log("Premove check-----------------------------------------------------------------------------------")
+		let tmp_board = this.copy(this)
 		this.transfer_piece(move.start_coords, move.end_coords)
 		let is_check = this.is_check(white)
-		this.board = Object.assign(new PlayeChessEngine.board.Board(), tmp_board)
+		console.log(JSON.stringify(this.board[0][1]))
+		console.log(JSON.stringify(tmp_board.board[0][1]))
+		this.board = tmp_board.board
 		return is_check
 	}
 	status(white) {
@@ -706,8 +837,10 @@ PlayeChessEngine.board.Board = class Board {
 			console.log("OK")
 			move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]].type != PlayeChessEngine.board.pieces.piece_type.no
 			this.transfer_piece(move.start_coords, move.end_coords)
-			console.log("Move is valid")
+			this.boards.push(this.disref_board(this))
 			move.is_valid = true
+			console.log("Move is valid")
+			return move
 		}
 		let start_ep_coords = this.get_en_passant(white)
 		if (start_ep_coords.toString() === [move.start_coords[0], move.start_coords[1]].toString()) {
@@ -715,6 +848,7 @@ PlayeChessEngine.board.Board = class Board {
 			let offset = white ? 1 : -1
 			if (move.end_coords[0] == start_ep_coords[0] + offset && move.end_coords[1] == start_ep_coords[1] + side) {
 				this.en_passant(start_ep_coords, [start_ep_coords[0] + offset, start_ep_coords[1] + side], white)
+				this.boards.push(this.disref_board(this))
 				move.is_valid = true
 				move.is_capture = true
 				console.log("Move is valid (en passant)")
@@ -753,6 +887,7 @@ PlayeChessEngine.PCE = class PCE {
 
 	constructor() {
 		this.board.print_board()
+		this.boards.push(this.board)
 		console.log(this.board)
 	}
 
@@ -787,5 +922,8 @@ PlayeChessEngine.PCE = class PCE {
 	move(x0, y0, x1, y1) {
 		let mv = new PlayeChessEngine.Move(x0, y0, x1, y1)
 		this.board.move(mv)
+		this.boards.push(board)
+		this.moves.push(mv)
+		this.move_countdown--
 	}
 }
