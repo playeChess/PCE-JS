@@ -841,7 +841,7 @@ PlayeChessEngine.board.Board = class Board {
 		let is_check = this.is_check(white)
 		console.log(JSON.stringify(this.board[0][1]))
 		console.log(JSON.stringify(tmp_board.board[0][1]))
-		this.board = tmp_board.board
+		this.board = this.copy_board(tmp_board.board)
 		return is_check
 	}
 	status(white) {
