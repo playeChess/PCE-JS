@@ -817,9 +817,9 @@ PlayeChessEngine.board.Board = class Board {
 		return this.copy_board(board.board)
 	}
 	/**
-	 * 
-	 * @param {*} board 
-	 * @returns 
+	 * Copies the board of a given Board object ot another
+	 * @param {PlayeChessEngine.board.Board} board The board to copy
+	 * @returns {PlayeChessEngine.board.Board} The board to copy to 
 	 */
 	copy(board) {
 		let tmp = new PlayeChessEngine.board.Board()
@@ -835,6 +835,12 @@ PlayeChessEngine.board.Board = class Board {
 		tmp.white_turn = board.white_turn
 		return tmp
 	}
+	/**
+	 * Checks if a move puts the player who plays it in check
+	 * @param {PlayeChessEngine.Move} move The move to check 
+	 * @param {bool} white Whether or not the player is white 
+	 * @returns {bool} If the move puts the player in check
+	 */
 	premove_check(move, white) {
 		console.log("Premove check-----------------------------------------------------------------------------------")
 		let tmp_board = this.copy(this)
@@ -845,6 +851,11 @@ PlayeChessEngine.board.Board = class Board {
 		this.board = this.copy_board(tmp_board.board)
 		return is_check
 	}
+	/**
+	 * Gets the status of the game
+	 * @param {bool} white If we want to check the status of white 
+	 * @returns {number} The status number (0 -> game ongoing, 1 -> checkmate, 2 -> stalemate)
+	 */
 	status(white) {
 		if (this.get_all_moves(this.board, white).length == 0) {
 			if (this.is_check(white))
@@ -854,6 +865,10 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return 0
 	}
+	/**
+	 * Checks if the game is in insufficient material situation
+	 * @returns {bool} Whether or not it actually is insufficient material
+	 */
 	insufficient_material() {
 		let num_knights = 0
 		let num_bishops = 0
@@ -881,6 +896,12 @@ PlayeChessEngine.board.Board = class Board {
 			return true
 		return false
 	}
+	/**
+	 * Checks if a player can castle
+	 * @param {bool} white Whether or not the player is white
+	 * @param {bool} kingside If you want to check kingside castling or not
+	 * @returns {bool} If the player can actually castle on the given side
+	 */
 	can_castle(white, kingside) {
 		let row = white ? 7 : 0
 		let king = this.board[row][4]
@@ -902,6 +923,11 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return true
 	}
+	/**
+	 * Castles a player
+	 * @param {bool} white Whether or not the player is white
+	 * @param {bool} kingside If you want to castle kingside or not
+	 */
 	castle(white, kingside) {
 		let row = white ? 7 : 0
 		let king = this.board[row][4]
@@ -909,6 +935,11 @@ PlayeChessEngine.board.Board = class Board {
 		this.transfer_piece([row, 4], [row, kingside ? 6 : 2])
 		this.transfer_piece([row, kingside ? 7 : 0], [row, kingside ? 5 : 3])
 	}
+	/**
+	 * Gets the coordinate of promotion for a player
+	 * @param {bool} white Whether or not the player is white
+	 * @returns {[number, number]} The coordinates of promotion (or [-1, -1] if the player cannot promote)
+	 */
 	get_promotion(white) {
 		let row = white ? 0 : 7
 		for (let i = 0; i < 8; i++) {
@@ -920,6 +951,12 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return [-1, -1]
 	}
+	/**
+	 * Promote a given player's piece to a given type
+	 * @param {bool} white Whether or not the player is white 
+	 * @param {PlayeChessEngine.board.pieces.piece_type} type The type of piece to promote
+	 * @returns {bool} If the player could actually promote
+	 */
 	promote(white, type) {
 		let [row, col] = this.get_promotion(white)
 		if (row == -1 || col == -1) {
@@ -937,8 +974,16 @@ PlayeChessEngine.board.Board = class Board {
 		else if (type == PlayeChessEngine.board.pieces.piece_type.q) {
 			this.board[row][col] = new PlayeChessEngine.board.pieces.Queen(white, row, col)
 		}
+		else {
+			return false
+		}
 		return true
 	}
+	/**
+	 * Checks if the game is in a threefold repetition situation
+	 * @param {bool} white Whether or not it is white to play
+	 * @returns {bool} If the game is actually in threefold repetition
+	 */
 	check_threefold_repetition(white) {
 		let count = 1
 		for (let i = 0; i < this.boards.length; i++) {
@@ -947,6 +992,12 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return count >= 3
 	}
+	/**
+	 * Gets coordinates of en passant for a player on the given side of a pawn
+	 * @param {bool} white Whether or not the player is white
+	 * @param {number} side The horizontal offset from the pawn (-1 or 1)
+	 * @returns {[number, number]} The coordinates of en passant (or [-1, -1] if the player cannot en passant)
+	 */
 	get_en_passant_side(white, side) {
 		let last_move = this.moves[this.moves.length - 1]
 		let offset = white ? -2 : 2
@@ -959,6 +1010,11 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return [-1, -1]
 	}
+	/**
+	 * Gets the coordinates of en passant for a given player
+	 * @param {bool} white Whether or not the player is white
+	 * @returns {[number, number]} The coordinates of en passant (or [-1, -1] if the player cannot en passant)
+	 */
 	get_en_passant(white) {
 		if (this.moves.length == 0)
 			return [-1, -1]
@@ -972,9 +1028,20 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return [-1, -1]
 	}
+	/**
+	 * Plays en passant from given coords to given coords
+	 * @param {[number, number]} start_coords The start coords 
+	 * @param {[number, number]} end_coords The end coords
+	 * @param {bool} white Whether or not the player is white
+	 */
 	en_passant(start_coords, end_coords, white) {
 		this.transfer_piece(start_coords, end_coords)
 	}
+	/**
+	 * Make a move
+	 * @param {PlayeChessEngine.Move} move The move to play 
+	 * @returns {PlayeChessEngine.Move} The updated move
+	 */
 	move(move) {
 		console.log(this)
 		let white = this.board[move.start_coords[0]][move.start_coords[1]].is_white
@@ -1006,28 +1073,61 @@ PlayeChessEngine.board.Board = class Board {
 	}
 }
 
+/**
+ * The status of the game
+ * 0 -> Game ongoing
+ * 1 -> Draw
+ * 2 -> Win
+ */
 PlayeChessEngine.status = {
 	game_ongoing: 0,
 	draw: 1,
 	win: 2
 }
 
+/**
+ * The draw id of a game
+ * 0 -> Stalemate
+ * 1 -> Insufficient material
+ * 2 -> Fifty moves
+ * 3 -> Threefold repetition
+ */
 PlayeChessEngine.draw = {
 	stalemate: 0,
 	insufficient_material: 1,
-	fifty_moves_rule: 2,
+	fifty_moves: 2,
 	threefold_repetition: 3
 }
 
+/**
+ * The win id of a game
+ * 0 -> White won
+ * 1 -> Black won
+ */
 PlayeChessEngine.win = {
 	white: 0,
 	black: 1
 }
 
+/**
+ * The PCE class of PlayeChessEngine (only accessible class)
+ */
 PlayeChessEngine.PCE = class PCE {
+	/**
+	 * The precedent moves
+	 */
 	moves = []
+	/**
+	 * The precedent boards
+	 */
 	boards = []
+	/**
+	 * The actual board
+	 */
 	board = new PlayeChessEngine.board.Board()
+	/**
+	 * The move countdown (for fifty moves)
+	 */
 	move_countdown = 50
 
 	constructor() {
@@ -1036,6 +1136,10 @@ PlayeChessEngine.PCE = class PCE {
 		console.log(this.board)
 	}
 
+	/**
+	 * Gets the status of the game
+	 * @returns {[number, number]} The game id and detail id of the game
+	 */
 	status() {
 		if (this.board.status(!white) == 1) {
 			if (white) {
@@ -1052,7 +1156,7 @@ PlayeChessEngine.PCE = class PCE {
 			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.insufficient_material
 		}
 		else if (this.move_countdown == 0) {
-			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.fifty_moves_rule
+			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.fifty_moves
 		}
 		else if (this.board.check_threefold_repetition(white)) {
 			return PlayeChessEngine.status.draw, PlayeChessEngine.draw.threefold_repetition
@@ -1060,10 +1164,23 @@ PlayeChessEngine.PCE = class PCE {
 		return PlayeChessEngine.status.game_ongoing
 	}
 
+	/**
+	 * Gets all moves for a given piece
+	 * @param {number} x The x coordinate of the piece
+	 * @param {number} y The y coordinate of the piece
+	 * @return {PlayeChessEngine.Move[]} All the possible moves
+	 */
 	get_moves(x, y) {
 		return this.board.get_moves(x, y)
 	}
 
+	/**
+	 * Move a piece from [x0, y0] to [x1, y1]
+	 * @param {number} x0 The start x coordinate
+	 * @param {number} y0 The start y coordinate
+	 * @param {number} x1 The end x coordinate
+	 * @param {number} y1 The end y coordinate
+	 */
 	move(x0, y0, x1, y1) {
 		let mv = new PlayeChessEngine.Move(x0, y0, x1, y1)
 		this.board.move(mv)
