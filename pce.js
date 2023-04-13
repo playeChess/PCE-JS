@@ -801,8 +801,9 @@ PlayeChessEngine.board.Board = class Board {
 					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Queen, board[i][j])
 				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.King) {
 					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.King, board[i][j])
+				} else {
+					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Piece, board[i][j])
 				}
-				tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Piece, board)
 			}
 		}
 		return tmp
@@ -822,7 +823,7 @@ PlayeChessEngine.board.Board = class Board {
 	 */
 	copy(board) {
 		let tmp = new PlayeChessEngine.board.Board()
-		tmp.board = this.disref_board(this)
+		tmp.board = this.copy_board(board.board)
 		tmp.boards = [...Array(board.boards.length)]
 		for(let i = 0; i < board.boards.length; i++) {
 			tmp.boards[i] = this.copy_board(board.boards[i])
