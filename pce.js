@@ -646,9 +646,9 @@ PlayeChessEngine.board.Board = class Board {
 	 */
 	print_board(moves = [], board = this.Board) {
 		let board_str = ""
-		board_str += "  #-----------------#\n"
+		board_str += "  ┌─────────────────┐\n"
 		for (let i = 0; i < 8; i++) {
-			board_str += (8 - i) + " | ";
+			board_str += (8 - i) + " │ ";
 			for (let j = 0; j < 8; j++) {
 				let skip = false
 				for (let k = 0; k < moves.length; k++) {
@@ -661,7 +661,7 @@ PlayeChessEngine.board.Board = class Board {
 				if (skip)
 					continue
 				if (board[7 - i][j].type == PlayeChessEngine.board.pieces.piece_type.no) {
-					board_str += "  "
+					board_str += ". "
 				}
 				else {
 					board_str += board[7 - i][j].show() + " "
@@ -669,7 +669,7 @@ PlayeChessEngine.board.Board = class Board {
 			}
 			board_str += "|\n"
 		}
-		board_str += "  #-----------------#\n"
+		board_str += "  └─────────────────┘\n"
 		board_str += "    a b c d e f g h\n"
 		console.log(board_str)
 	}
