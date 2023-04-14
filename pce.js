@@ -99,9 +99,6 @@ PlayeChessEngine.Move = class Move {
 		let included = false
 		moves.forEach(mv => {
 			mv.is_valid = false
-			console.log("MOVE - " + JSON.stringify(mv))
-			console.log("NMOV - " + JSON.stringify(this))
-			console.log(JSON.stringify(mv) == JSON.stringify(this))
 			if(JSON.stringify(mv) == JSON.stringify(this)) {
 				included = true
 			}
@@ -305,7 +302,6 @@ PlayeChessEngine.board.pieces.Pawn = class Pawn extends PlayeChessEngine.board.p
 	 * @returns {boolean} Whether or not the move is legal
 	 */
 	validation_function(board, x_final, y_final) {
-		console.log("Validating Pawn (" + this.coords[0] + ", " + this.coords[1] + ") to (" + x_final + ", " + y_final + ")");
 		let x_diff = x_final - this.coords[0]
 		let y_diff = y_final - this.coords[1]
 		if (y_diff == 0 && x_diff != 0) {
@@ -514,7 +510,6 @@ PlayeChessEngine.board.Board = class Board {
 	 * @type {PlayeChessEngine.board.pieces.Piece[][]}
 	 */
 	set board(board) {
-		console.trace()
 		this.Board = board
 	}
 	get board() {
@@ -689,15 +684,13 @@ PlayeChessEngine.board.Board = class Board {
 		if(this.board[x][y].type == PlayeChessEngine.board.pieces.piece_type.no) {
 			return []
 		}
-		console.log(JSON.stringify(this.board[x][y]))
-		console.trace()
 		let moves = []
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 8; j++) {
+				console.log("Validating " + x + " " + y + " to " + JSON.stringify(this.board[i][j]))
 				if(this.board[x][y].type == PlayeChessEngine.board.pieces.piece_type.no)
 					continue
 				if (this.board[x][y].validation_function(this.board, i, j)) {
-					console.log("Valid" + x + y + " to " + i + j)
 					let move = new PlayeChessEngine.Move(x, y, i, j)
 					if (from_premove) {
 						move.is_valid = true
@@ -770,13 +763,34 @@ PlayeChessEngine.board.Board = class Board {
 		}
 		return false
 	}
+	get_adapted_copy(piece) {
+		if(piece instanceof PlayeChessEngine.board.pieces.Pawn) {
+			return Object.assign(new PlayeChessEngine.board.pieces.Pawn, piece)
+		}
+		if(piece instanceof PlayeChessEngine.board.pieces.Rook) {
+			return Object.assign(new PlayeChessEngine.board.pieces.Rook, piece)
+		}
+		if(piece instanceof PlayeChessEngine.board.pieces.Knight) {
+			return Object.assign(new PlayeChessEngine.board.pieces.Knight, piece)
+		}
+		if(piece instanceof PlayeChessEngine.board.pieces.Bishop) {
+			return Object.assign(new PlayeChessEngine.board.pieces.Bishop, piece)
+		}
+		if(piece instanceof PlayeChessEngine.board.pieces.Queen) {
+			return Object.assign(new PlayeChessEngine.board.pieces.Queen, piece)
+		}
+		if(piece instanceof PlayeChessEngine.board.pieces.King) {
+			return Object.assign(new PlayeChessEngine.board.pieces.King, piece)
+		}
+		return Object.assign(new PlayeChessEngine.board.pieces.Piece, piece)
+	}
 	/**
 	 * Transfers a piece from start_coords to end_coords
 	 * @param {[number, number]} start_coords The start coords 
 	 * @param {*} end_coords 
 	 */
 	transfer_piece(start_coords, end_coords) {
-		this.board[end_coords[0]][end_coords[1]] = Object.assign(new PlayeChessEngine.board.pieces.Piece, this.board[start_coords[0]][start_coords[1]])
+		this.board[end_coords[0]][end_coords[1]] = this.get_adapted_copy(this.board[start_coords[0]][start_coords[1]])
 		this.board[start_coords[0]][start_coords[1]] = new PlayeChessEngine.board.pieces.Piece(PlayeChessEngine.board.pieces.piece_type.no, true, -1, -1)
 		this.board[start_coords[0]][start_coords[1]].coords = start_coords
 		this.board[end_coords[0]][end_coords[1]].coords = end_coords
@@ -790,21 +804,7 @@ PlayeChessEngine.board.Board = class Board {
 		let tmp = [[...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)], [...Array(8)]]
 		for(let i = 0; i < 8; i++) {
 			for(let j = 0; j < 8; j++) {
-				if(board[i][j] instanceof PlayeChessEngine.board.pieces.Pawn) {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Pawn, board[i][j])
-				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Rook) {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Rook, board[i][j])
-				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Knight) {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Knight, board[i][j])
-				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Bishop) {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Bishop, board[i][j])
-				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.Queen) {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Queen, board[i][j])
-				} else if(board[i][j] instanceof PlayeChessEngine.board.pieces.King) {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.King, board[i][j])
-				} else {
-					tmp[i][j] = Object.assign(new PlayeChessEngine.board.pieces.Piece, board[i][j])
-				}
+				tmp[i][j] = this.get_adapted_copy(board[i][j])
 			}
 		}
 		return tmp
@@ -1047,7 +1047,6 @@ PlayeChessEngine.board.Board = class Board {
 			this.transfer_piece(move.start_coords, move.end_coords)
 			this.boards.push(this.disref_board(this))
 			move.is_valid = true
-			console.log("Move is valid")
 			return move
 		}
 		let start_ep_coords = this.get_en_passant(white)
@@ -1059,11 +1058,9 @@ PlayeChessEngine.board.Board = class Board {
 				this.boards.push(this.disref_board(this))
 				move.is_valid = true
 				move.is_capture = true
-				console.log("Move is valid (en passant)")
 				return move
 			}
 		}
-		console.log("Move is invalid")
 		move.is_valid = false
 		return move
 	}
@@ -1129,7 +1126,6 @@ PlayeChessEngine.PCE = class PCE {
 	constructor() {
 		this.board.print_board()
 		this.boards.push(this.board)
-		console.log(this.board)
 	}
 
 	/**
