@@ -96,14 +96,17 @@ PlayeChessEngine.Move = class Move {
 	 * @returns {bool} Whether or not the move is included
 	 */
 	included_in(moves) {
+		let included = false
 		moves.forEach(mv => {
-			console.log(JSON.stringify(mv))
-			console.log(JSON.stringify(this))
+			mv.is_valid = false
+			console.log("MOVE - " + JSON.stringify(mv))
+			console.log("NMOV - " + JSON.stringify(this))
+			console.log(JSON.stringify(mv) == JSON.stringify(this))
 			if(JSON.stringify(mv) == JSON.stringify(this)) {
-				return true
+				included = true
 			}
 		})
-		return false
+		return included
 	}
 }
 
@@ -267,10 +270,10 @@ PlayeChessEngine.board.pieces.Piece = class Piece {
 	 */
 	show() {
 		if (this.is_white) {
-			let piece_names = ["P", "N", "B", "R", "Q", "K"]
+			let piece_names = ["P", "R", "N", "B", "Q", "K"]
 			return piece_names[this.type]
 		}
-		let piece_names = ["p", "n", "b", "r", "q", "k"]
+		let piece_names = ["p", "r", "n", "b", "q", "k"]
 		return piece_names[this.type]
 	}
 	/**
@@ -511,7 +514,6 @@ PlayeChessEngine.board.Board = class Board {
 	 * @type {PlayeChessEngine.board.pieces.Piece[][]}
 	 */
 	set board(board) {
-		console.log("update board")
 		console.trace()
 		this.Board = board
 	}
@@ -692,19 +694,19 @@ PlayeChessEngine.board.Board = class Board {
 		let moves = []
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 8; j++) {
-				console.log("Checking " + x + y + " to " + i + j)
-				console.log("BRD Cell" + JSON.stringify(this.board[x][y]))
 				if(this.board[x][y].type == PlayeChessEngine.board.pieces.piece_type.no)
 					continue
 				if (this.board[x][y].validation_function(this.board, i, j)) {
 					console.log("Valid" + x + y + " to " + i + j)
 					let move = new PlayeChessEngine.Move(x, y, i, j)
 					if (from_premove) {
+						move.is_valid = true
 						moves.push(move)
-						continue
 					}
-					if (!this.premove_check(move, this.board[x][y].is_white))
+					else if (!this.premove_check(move, this.board[x][y].is_white)) {
+						move.is_valid = true
 						moves.push(move)
+					}
 				}
 			}
 		}
@@ -774,7 +776,6 @@ PlayeChessEngine.board.Board = class Board {
 	 * @param {*} end_coords 
 	 */
 	transfer_piece(start_coords, end_coords) {
-		console.log("transfer")
 		this.board[end_coords[0]][end_coords[1]] = Object.assign(new PlayeChessEngine.board.pieces.Piece, this.board[start_coords[0]][start_coords[1]])
 		this.board[start_coords[0]][start_coords[1]] = new PlayeChessEngine.board.pieces.Piece(PlayeChessEngine.board.pieces.piece_type.no, true, -1, -1)
 		this.board[start_coords[0]][start_coords[1]].coords = start_coords
@@ -842,12 +843,9 @@ PlayeChessEngine.board.Board = class Board {
 	 * @returns {bool} If the move puts the player in check
 	 */
 	premove_check(move, white) {
-		console.log("Premove check-----------------------------------------------------------------------------------")
 		let tmp_board = this.copy(this)
 		this.transfer_piece(move.start_coords, move.end_coords)
 		let is_check = this.is_check(white)
-		console.log(JSON.stringify(this.board[0][1]))
-		console.log(JSON.stringify(tmp_board.board[0][1]))
 		this.board = this.copy_board(tmp_board.board)
 		return is_check
 	}
@@ -1043,10 +1041,8 @@ PlayeChessEngine.board.Board = class Board {
 	 * @returns {PlayeChessEngine.Move} The updated move
 	 */
 	move(move) {
-		console.log(this)
 		let white = this.board[move.start_coords[0]][move.start_coords[1]].is_white
 		if (move.included_in(this.get_moves(move.start_coords[0], move.start_coords[1]))) {
-			console.log("OK")
 			move.is_capture = this.board[move.end_coords[0]][move.end_coords[1]].type != PlayeChessEngine.board.pieces.piece_type.no
 			this.transfer_piece(move.start_coords, move.end_coords)
 			this.boards.push(this.disref_board(this))
@@ -1184,7 +1180,7 @@ PlayeChessEngine.PCE = class PCE {
 	move(x0, y0, x1, y1) {
 		let mv = new PlayeChessEngine.Move(x0, y0, x1, y1)
 		this.board.move(mv)
-		this.boards.push(board)
+		this.boards.push(this.board)
 		this.moves.push(mv)
 		this.move_countdown--
 	}
